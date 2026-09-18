@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0d0f13">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BELYAEV_PROJECT">
+<meta name="description" content="Онлайн-проектировщик электрики: выберите объект, площадь, помещения, этажность и получите спецификацию кабеля, автоматов, УЗО, состав щита и смету под ключ.">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="robots" content="index, follow">
+<meta content="website" property="og:type">
+<meta content="BELYAEV_PROJECT — онлайн-проектировщик электрики" property="og:title">
+<meta content="Онлайн-проектировщик электрики: выберите объект, площадь, помещения, этажность и получите спецификацию кабеля, автоматов, УЗО, состав щита и смету под ключ." property="og:description">
+<meta property="og:url" content="https://gor-nn.ru/proektirovshchik-elektriki.html">
+<meta content="ru_RU" property="og:locale">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23161920'/%3E%3Cpath d='M52 12 L34 52 L46 52 L38 88 L66 42 L54 42 L62 12 Z' fill='%23f5b400'/%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>BELYAEV_PROJECT — онлайн-проектировщик электрики</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0f13;--panel:#161920;--panel2:#1b1f27;
+  --bdr:rgba(255,255,255,.09);--bdr2:rgba(255,255,255,.05);
+  --am:#f5b400;--amb:#ffcf40;--cop:#c17a4a;
+  --txt:#eef1f5;--mut:#8b93a1;--dng:#e2574c;
+  --safe-b:env(safe-area-inset-bottom);
+}
+html,body{margin:0;padding:0;overflow-x:hidden;-webkit-text-size-adjust:100%}
+body{
+  background:radial-gradient(ellipse at top left,rgba(245,180,0,.06),transparent 45%),
+  radial-gradient(ellipse at bottom right,rgba(193,122,74,.07),transparent 50%),var(--bg);
+  color:var(--txt);font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  padding:16px 16px calc(84px + var(--safe-b));
+  min-height:100vh;min-height:100dvh;
+  -webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;
+}
+.app{max-width:600px;margin:0 auto}
+
+/* splash */
+.splash{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .4s}
+.splash.hide{opacity:0;pointer-events:none}
+.splash svg{width:80px;height:80px;margin-bottom:16px}
+.splash p{color:var(--cop);font-size:16px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+
+/* bottom nav */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--panel);border-top:1px solid var(--bdr);display:flex;padding:6px 0 calc(6px + var(--safe-b));z-index:90}
+.nbtn{flex:1;background:none;border:none;color:var(--mut);font-size:10px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0;cursor:pointer;transition:color .2s}
+.nbtn.a{color:var(--am)}
+.nbtn svg{width:22px;height:22px}
+
+/* pages */
+.pg{display:none}.pg.a{display:block}
+
+/* header */
+header{margin-bottom:16px}
+.brand{display:block;text-align:center;font-size:clamp(30px,7vw,38px);font-weight:800;letter-spacing:.06em;color:var(--cop);text-transform:uppercase;margin:0 0 6px}
+.eye{font-size:11px;letter-spacing:.12em;color:var(--cop);text-transform:uppercase;margin:0 0 6px;display:flex;align-items:center;gap:6px;font-weight:600}
+.eye::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--am);box-shadow:0 0 6px 1px var(--am)}
+h1{font-weight:800;font-size:clamp(22px,5vw,28px);line-height:1.2;margin:0 0 6px}
+.sub{color:var(--mut);font-size:13px;line-height:1.4;margin:0}
+
+/* wire */
+.wire{width:100%;height:10px;margin:14px 0;opacity:.5}
+
+/* panel */
+.pnl{background:var(--panel);border:1px solid var(--bdr);border-radius:12px;padding:14px;margin-bottom:12px}
+
+/* step head */
+.step-h{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;margin-bottom:12px;color:var(--amb)}
+.step-h .sn{width:22px;height:22px;border-radius:6px;flex-shrink:0;background:linear-gradient(180deg,var(--amb),var(--am));color:#0d0f13;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+.st-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+
+/* floor group */
+.floor-h{font-size:11px;color:var(--mut);margin:14px 0 8px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+.floor-h:first-child{margin-top:0}
+
+/* fields */
+.f{margin-bottom:12px}
+.f-label{display:block;font-size:12px;font-weight:600;color:var(--mut);margin:0 0 5px}
+.f input[type="number"],.f input[type="text"],.f input[type="tel"],.f select{width:100%;background:var(--panel2);border:1px solid var(--bdr);border-radius:8px;color:var(--txt);font-size:15px;padding:12px;transition:border-color .15s}
+.f select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%238b93a1' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:34px}
+.f select option{background:var(--panel2);color:var(--txt)}
+.f input:focus,.f select:focus{outline:none;border-color:var(--am)}
+
+/* room tiles */
+.rt{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rtl{position:relative}
+.rtl input{position:absolute;opacity:0;inset:0;width:100%;height:100%;cursor:pointer;margin:0;pointer-events:none}
+.rtl span{display:flex;align-items:center;gap:8px;padding:12px;background:var(--panel2);border:1px solid var(--bdr);border-radius:10px;color:var(--txt);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;user-select:none}
+.rtl span .ico{font-size:16px;line-height:1}
+.rtl span .chk{margin-left:auto;width:18px;height:18px;border:1.5px solid var(--bdr2);border-radius:50%;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;color:transparent;transition:all .15s}
+.rtl input:checked+span{background:rgba(245,180,0,.08);border-color:var(--am);color:var(--amb)}
+.rtl input:checked+span .chk{background:var(--am);border-color:var(--am);color:#0d0f13}
+.rtl input:checked+span .chk::before{content:"✓";font-size:11px;font-weight:800}
+.rtl span:hover{border-color:var(--am)}
+.stepper{display:inline-flex;align-items:center;margin-left:auto;background:var(--panel);border:1px solid var(--bdr);border-radius:8px;overflow:hidden;flex-shrink:0}
+.stepper .qbtn{background:none;border:none;color:var(--am);width:28px;height:28px;font-size:16px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:1}
+.stepper .qbtn:active{background:rgba(245,180,0,.15)}
+.stepper b{min-width:26px;text-align:center;font-size:13px;font-weight:700;color:var(--amb);font-variant-numeric:tabular-nums}
+
+/* switch rows */
+.sr{position:relative}
+.sr input{position:absolute;opacity:0;inset:0;width:100%;height:100%;cursor:pointer;margin:0;pointer-events:none}
+.sr span{display:flex;align-items:center;gap:8px;padding:12px;background:var(--panel2);border:1px solid var(--bdr);border-radius:10px;color:var(--txt);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;user-select:none}
+.sr span .ico{font-size:15px;line-height:1}
+.sr span .tgl{margin-left:auto;width:38px;height:22px;border-radius:22px;background:var(--panel);border:1px solid var(--bdr);position:relative;flex-shrink:0;transition:background .2s,border-color .2s}
+.sr span .tgl:after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--mut);transition:transform .2s,background .2s}
+.sr input:checked+span{background:rgba(245,180,0,.06);border-color:rgba(245,180,0,.4)}
+.sr input:checked+span .tgl{background:var(--am);border-color:var(--am)}
+.sr input:checked+span .tgl:after{transform:translateX(16px);background:#0d0f13}
+  .sr .stepper{margin-left:8px}
+
+/* buttons */
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.acts .bf{grid-column:1/-1}
+.btn{padding:14px;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;text-align:center}
+.bp{background:linear-gradient(180deg,var(--amb),var(--am));color:#0d0f13}
+.bp:active{transform:scale(.97)}
+.bs{background:var(--panel2);border:1px solid var(--bdr);color:var(--txt)}
+.bs:active{border-color:var(--am)}
+.bd{background:rgba(226,87,76,.12);border:1px solid rgba(226,87,76,.3);color:var(--dng)}
+
+/* note */
+.note{text-align:center;color:var(--mut);font-size:12px;margin:12px auto 0;max-width:480px;line-height:1.5}
+
+/* result */
+.res{background:var(--panel);border:1px solid var(--bdr);border-radius:12px;padding:14px;margin:16px 0}
+.res-h{font-size:14px;font-weight:800;margin-bottom:12px}
+.result-card{background:var(--panel);border:1px solid var(--bdr);border-radius:12px;padding:12px;margin-bottom:10px}
+.result-card:last-child{margin-bottom:0}
+.result-card h4{font-size:13px;font-weight:700;margin:0 0 8px;color:var(--amb)}
+.detail-item{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px dashed var(--bdr2);color:var(--txt);font-size:13px;gap:8px;line-height:1.4}
+.detail-item:last-child{border-bottom:none}
+.detail-item strong{color:var(--amb);font-weight:700;white-space:nowrap;text-align:right}
+.detail-item.total{border-top:2px solid var(--am);margin-top:8px;font-weight:800;color:var(--amb);font-size:14px}
+.report-box ul,.report-box p{margin:8px 0 0;padding-left:18px;color:var(--txt);font-size:13px;line-height:1.65}
+.report-box p{padding-left:0}
+.report-box li strong{color:var(--amb)}
+.shield-box ul{list-style:none;margin:8px 0 0;padding:0;color:var(--txt);font-size:12.5px;line-height:1.7}
+.shield-box li strong{color:var(--am);font-weight:800}
+.reason-box .detail-item{border:none;padding:4px 0}
+
+/* plan */
+#svgContainer svg{width:100%;height:auto;display:block;background:var(--panel);border:1px solid var(--bdr);border-radius:12px}
+.plan-note{text-align:center;color:var(--mut);font-size:12px;margin-top:12px;line-height:1.5}
+.room-polygon{fill:var(--panel2);stroke:var(--bdr);stroke-width:2;cursor:pointer;transition:fill .2s,stroke .2s}
+.room-polygon:hover{fill:rgba(245,180,0,.12)}
+.room-polygon.selected{fill:rgba(245,180,0,.18);stroke:var(--am);stroke-width:3}
+.room-text{font-size:12px;fill:var(--txt);pointer-events:none;font-weight:600}
+
+/* history */
+.hitem{background:var(--panel);border:1px solid var(--bdr);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:all .2s}
+.hitem:active{border-color:var(--am);transform:scale(.98)}
+.hitem-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.hitem-name{font-weight:700;font-size:14px}
+.hitem-date{font-size:11px;color:var(--mut)}
+.hitem-addr{font-size:12px;color:var(--mut);margin-bottom:4px}
+.hitem-total{font-size:18px;font-weight:800;color:var(--amb);text-align:right}
+.hitem-items{font-size:11px;color:var(--cop);margin-top:4px}
+.hitem-actions{display:flex;gap:8px;margin-top:10px}
+.hitem-actions button{flex:1;padding:9px;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer}
+.hp{background:var(--panel2);border:1px solid var(--bdr);color:var(--txt)}
+.hp:active{border-color:var(--am)}
+.hd{background:rgba(226,87,76,.12);border:1px solid rgba(226,87,76,.3);color:var(--dng)}
+.hempty{text-align:center;padding:40px 20px;color:var(--mut);font-size:14px}
+.hback{background:none;border:none;color:var(--am);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:14px;display:flex;align-items:center;gap:6px;padding:0}
+.hdetail{padding:0}
+.hrow{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--bdr2);font-size:13px}
+.hrow:last-child{border-bottom:none}
+.hrow .hn{flex:1;padding-right:8px}
+.hrow .hq{color:var(--mut);margin-right:8px;font-family:monospace}
+.hrow .ht{color:var(--amb);font-weight:600;white-space:nowrap}
+.totbig{font-size:clamp(20px,5vw,26px);font-weight:800;color:var(--amb);text-shadow:0 0 12px rgba(255,207,64,.3);text-align:right}
+
+/* toast */
+.toast{position:fixed;bottom:calc(96px + var(--safe-b));left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--am);border-radius:10px;padding:12px 20px;font-size:13px;color:var(--amb);z-index:200;max-width:90%;opacity:0;transition:opacity .3s;pointer-events:none;text-align:center}
+.toast.s{opacity:1}
+
+@media (max-width:480px){
+  .st-grid,.rt{grid-template-columns:1fr}
+}
+@media print{
+  body{background:#fff;color:#000;padding:12px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .splash,.toast,.acts,.wire,.bnav{display:none!important}
+  .pg{display:block!important}
+  #projectResult{display:block!important}
+  .pnl,.res,.result-card{background:#fff;border:1px solid #ccc}
+  .result-card h4,.detail-item strong,.detail-item.total,.step-h{color:#000}
+  .detail-item{color:#000;border-color:#ddd}
+  .report-box ul,.report-box p,.shield-box ul{color:#000}
+  .shield-box li strong{color:#000}
+  #svgContainer svg{background:#fff;border:1px solid #ccc}
+  .room-text{fill:#000}
+  .eye,.sub,.note,.plan-note,h1,.brand{color:#000}
+}
+</style>
+</head>
+<body>
+<div class="splash" id="splash">
+  <svg viewBox="0 0 192 192" fill="none"><rect width="192" height="192" rx="40" fill="#161920"/><path d="M100 30L80 100l30 0-25 65 35-75-30 0z" fill="#f5b400"/></svg>
+  <p>BELYAEV_PROJECT · Загрузка...</p>
+</div>
+
+<div class="app">
+  <div class="pg a" id="pCalc">
+    <header>
+      <p class="brand">BELYAEV_PROJECT</p>
+      <p class="eye">Электромонтаж · расчёт</p>
+      <h1>Проектировщик</h1>
+      <p class="sub">Выберите объект, площадь, помещения и этажность — посчитаем кабель, автоматы, УЗО, соберём щит и рассчитаем смету «под ключ».</p>
+    </header>
+
+    <svg class="wire" viewBox="0 0 1000 10" preserveAspectRatio="none"><line x1="0" y1="5" x2="1000" y2="5" stroke="#c17a4a" stroke-width="1" stroke-dasharray="2 6"/><circle cx="20" cy="5" r="2.5" fill="#f5b400"/><circle cx="500" cy="5" r="2.5" fill="#c17a4a"/><circle cx="980" cy="5" r="2.5" fill="#f5b400"/></svg>
+
+    <div class="pnl">
+      <div class="f"><label class="f-label" for="cN">Имя</label><input type="text" id="cN" placeholder="Иванов Иван" autocomplete="name"></div>
+      <div class="f"><label class="f-label" for="cP">Телефон</label><input type="tel" id="cP" placeholder="+7 (___) ___-__-__" autocomplete="tel" inputmode="tel"></div>
+      <div class="f" style="margin-bottom:0"><label class="f-label" for="cA">Адрес объекта</label><input type="text" id="cA" placeholder="г. Москва, ул. Примерная, д. 1" autocomplete="street-address"></div>
+    </div>
+
+    <div class="pnl">
+      <div class="step-h"><span class="sn">1</span>Объект, ввод, плита и площадь</div>
+      <div class="st-grid">
+        <div class="f">
+          <label class="f-label" for="objType">Тип объекта</label>
+          <select id="objType">
+            <option value="flat">Квартира</option>
+            <option value="house">Частный дом</option>
+            <option value="studio">Студия</option>
+            <option value="office">Офис</option>
+            <option value="shop">Магазин</option>
+            <option value="restaurant">Ресторан</option>
+            <option value="warehouse">Склад</option>
+            <option value="beauty">Салон красоты</option>
+            <option value="medical">Медицинский центр</option>
+          </select>
+        </div>
+        <div class="f" id="floorsWrap" style="display:none">
+          <label class="f-label" for="floors">Этажность</label>
+          <select id="floors">
+            <option value="1">1 этаж</option>
+            <option value="2">2 этажа</option>
+          </select>
+        </div>
+        <div class="f">
+          <label class="f-label" for="phaseType">Тип ввода</label>
+          <select id="phaseType">
+            <option value="1">Однофазный 220 В</option>
+            <option value="3">Трёхфазный 380 В</option>
+          </select>
+        </div>
+        <div class="f">
+          <label class="f-label" for="stoveType">Плита</label>
+          <select id="stoveType">
+            <option value="gas">Газовая</option>
+            <option value="electric">Электрическая</option>
+            <option value="induction">Индукционная</option>
+          </select>
+        </div>
+        <div class="f">
+          <label class="f-label" for="objArea">Площадь, м²</label>
+          <input type="number" id="objArea" value="60" min="10" max="5000" step="1">
+        </div>
+      </div>
+    </div>
+
+    <div class="pnl">
+      <div class="step-h"><span class="sn">2</span>Помещения</div>
+      <div id="roomsCheckboxes"></div>
+    </div>
+
+    <div class="pnl">
+      <div class="step-h"><span class="sn">3</span>Дополнительное оборудование</div>
+      <div id="applianceCheckboxes">
+        <div class="f"><label class="sr"><input type="checkbox" class="appliance-cb" value="conditioner"><span><span class="ico">❄️</span> Кондиционер<span class="stepper astep"><button type="button" class="qbtn" data-d="-1">−</button><b>1</b><button type="button" class="qbtn" data-d="1">+</button></span><span class="tgl"></span></span></label></div>
+        <div class="f"><label class="sr"><input type="checkbox" class="appliance-cb" value="dishwasher"><span><span class="ico">🍽️</span> Посудомойка<span class="tgl"></span></span></label></div>
+        <div class="f"><label class="sr"><input type="checkbox" class="appliance-cb" value="boiler"><span><span class="ico">♨️</span> Бойлер<span class="tgl"></span></span></label></div>
+        <div class="f"><label class="sr"><input type="checkbox" class="appliance-cb" value="floorHeat"><span><span class="ico">🔥</span> Тёплый пол<span class="tgl"></span></span></label></div>
+        <div class="f"><label class="sr"><input type="checkbox" class="appliance-cb" value="washingMachine"><span><span class="ico">🧺</span> Стиральная машина<span class="tgl"></span></span></label></div>
+        <div class="f"><label class="sr"><input type="checkbox" class="appliance-cb" value="dryer"><span><span class="ico">🌀</span> Сушильная машина<span class="tgl"></span></span></label></div>
+        <div class="f"><label class="sr"><input type="checkbox" class="appliance-cb" value="evCharger"><span><span class="ico">🔌</span> Зарядка электромобиля<span class="tgl"></span></span></label></div>
+        <div class="f" style="margin-bottom:0"><label class="sr"><input type="checkbox" class="appliance-cb" value="server"><span><span class="ico">🖥️</span> Серверная / ИБП<span class="tgl"></span></span></label></div>
+      </div>
+    </div>
+
+    <div class="res" id="projectResult" style="display:none;">
+      <div class="res-h">📋 Предварительный проект электрики</div>
+      <div class="result-card report-box" id="reportContainer"></div>
+      <div id="roomsResultContainer"></div>
+      <div class="result-card shield-box" id="shieldContainer"></div>
+      <div class="result-card reason-box" id="reasonContainer"></div>
+      <div class="result-card summary-box" id="summaryContainer"></div>
+    </div>
+
+    <section id="plan" style="margin-top:8px">
+      <header>
+        <p class="eye">Схема</p>
+        <h1>План объекта</h1>
+        <p class="sub" id="planSectionNote">Нажимайте на комнаты — они будут выбраны или сняты. Для спален и ванных указано их число. Для двухэтажного дома план отображается отдельно по этажам.</p>
+      </header>
+      <div id="svgContainer"></div>
+      <p class="plan-note">Интерактивная схема доступна для квартиры и дома. Для других типов выберите помещения списком выше.</p>
+    </section>
+
+    <div class="acts">
+      <button class="btn bp bf" id="createProjectBtn">⚡ Создать проект</button>
+      <button class="btn bs" onclick="rst()">↺ Сбросить</button>
+      <button class="btn bs" onclick="ePDF()">📄 Скачать PDF</button>
+      <button class="btn bs" onclick="eXLS()">📊 Скачать .xls</button>
+      <button class="btn bs" onclick="window.print()">🖨️ Распечатать</button>
+    </div>
+  </div>
+
+  <div class="pg" id="pHist">
+    <header>
+      <p class="brand">BELYAEV_PROJECT</p>
+      <p class="eye">Архив</p>
+      <h1>История расчётов</h1>
+    </header>
+    <div id="hList"></div>
+  </div>
+
+  <div class="pg" id="pDetail">
+    <header>
+      <p class="brand">BELYAEV_PROJECT</p>
+      <p class="eye">Детали</p>
+      <h1 id="dTitle">Расчёт</h1>
+    </header>
+    <div id="dContent"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<nav class="bnav">
+  <button class="nbtn a" onclick="sP('pCalc',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h8M8 14h4"/></svg>Калькулятор</button>
+  <button class="nbtn" onclick="sP('pHist',this);bH()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>История</button>
+</nav>
+
+<script>
+(function(){
+  var objTypeSelect=document.getElementById("objType");
+  var roomsContainer=document.getElementById("roomsCheckboxes");
+  var areaInput=document.getElementById("objArea");
+  var floorsSelect=document.getElementById("floors");
+  var floorsWrap=document.getElementById("floorsWrap");
+
+  function ts(m){
+    var t=document.getElementById("toast");
+    t.textContent=m;t.classList.add("s");
+    setTimeout(function(){t.classList.remove("s");},2200);
+  }
+  function fm(n){return Math.round(n).toLocaleString("ru-RU")+" ₽";}
+  function fmt(n){return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g," ");}
+
+  // ===== Телефон (+7) =====
+  var phoneInput=document.getElementById("cP");
+  if(phoneInput){
+    phoneInput.addEventListener("input",function(){
+      var d=this.value.replace(/\D+/g,"");
+      if(d.charAt(0)==="8")d=d.slice(1);
+      if(d.charAt(0)!=="7")d="7"+d;
+      d=d.slice(0,11);
+      var s="+7";
+      if(d.length>1)s+=" ("+d.slice(1,4);
+      if(d.length>4)s+=") "+d.slice(4,7);
+      if(d.length>7)s+="-"+d.slice(7,9);
+      if(d.length>9)s+="-"+d.slice(9,11);
+      this.value=s;
+    });
+  }
+
+  // ===== Справочники =====
+  var ROOM_ICONS = {
+    kitchen:"🍳",living:"🛋",bedroom:"🛏",bathroom:"🛁",corridor:"🚪",children:"🧸",cabinet:"💼",balcony:"☀️",
+    garage:"🚗",boiler:"🔥",main:"🛋",open:"🏢",meeting:"💬",boss:"👔",server:"🖥",hall:"🏬",cash:"💳",
+    mainHall:"🍽",bar:"🍸",storage:"🏭",loading:"🚚",washing:"💇",reception:"📋",procedure:"💉",warehouse:"🏭",office:"🏢",
+    bedroom1:"🛏",bedroom2:"🛏",bathroom1:"🛁",bathroom2:"🛁"
+  };
+  var MULTI={bedroom:1,bathroom:1,bedroom1:1,bedroom2:1,bathroom1:1,bathroom2:1};
+  var PLAN_OF={bedroom:"bedroom",bedroom1:"bedroom",bedroom2:"bedroom",bathroom:"bathroom",bathroom1:"bathroom",bathroom2:"bathroom"};
+  var roomCounts={};
+  var applianceCounts={};
+  var roomSets = {
+    flat: [ {id:'kitchen',name:'Кухня'},{id:'living',name:'Гостиная'},{id:'bedroom',name:'Спальня'},{id:'bathroom',name:'Ванная'},{id:'corridor',name:'Прихожая'},{id:'children',name:'Детская'},{id:'cabinet',name:'Кабинет'},{id:'balcony',name:'Балкон'} ],
+    house: [ {id:'kitchen',name:'Кухня'},{id:'living',name:'Гостиная'},{id:'bedroom',name:'Спальня'},{id:'bathroom',name:'Ванная'},{id:'corridor',name:'Прихожая'},{id:'children',name:'Детская'},{id:'cabinet',name:'Кабинет'},{id:'garage',name:'Гараж'},{id:'boiler',name:'Котельная'} ],
+    studio: [ {id:'main',name:'Основное помещение'},{id:'bathroom',name:'Ванная'},{id:'kitchen',name:'Кухонная зона'} ],
+    office: [ {id:'open',name:'Open Space'},{id:'meeting',name:'Переговорная'},{id:'boss',name:'Кабинет руководителя'},{id:'bathroom',name:'Санузел'},{id:'server',name:'Серверная'},{id:'kitchen',name:'Кухонная зона'} ],
+    shop: [ {id:'hall',name:'Торговый зал'},{id:'cash',name:'Кассовая зона'},{id:'warehouse',name:'Склад'},{id:'bathroom',name:'Санузел'} ],
+    restaurant: [ {id:'mainHall',name:'Основной зал'},{id:'kitchen',name:'Кухня'},{id:'bar',name:'Бар'},{id:'bathroom',name:'Санузел'},{id:'warehouse',name:'Склад'} ],
+    warehouse: [ {id:'storage',name:'Зона хранения'},{id:'loading',name:'Зона погрузки'},{id:'office',name:'Офис'},{id:'bathroom',name:'Санузел'} ],
+    beauty: [ {id:'main',name:'Зал обслуживания'},{id:'washing',name:'Моечная'},{id:'bathroom',name:'Санузел'} ],
+    medical: [ {id:'reception',name:'Ресепшен'},{id:'cabinet',name:'Кабинет врача'},{id:'procedure',name:'Процедурная'},{id:'bathroom',name:'Санузел'} ]
+  };
+  var house2First = [
+    {id:'living',name:'Гостиная'},{id:'kitchen',name:'Кухня'},{id:'bedroom1',name:'Спальня'},{id:'bathroom1',name:'Ванная'},
+    {id:'corridor',name:'Прихожая'},{id:'children',name:'Детская'},{id:'cabinet',name:'Кабинет'},{id:'garage',name:'Гараж'},{id:'boiler',name:'Котельная'}
+  ];
+  var house2Second = [
+    {id:'bedroom2',name:'Спальня'},{id:'bathroom2',name:'Ванная'}
+  ];
+  var bedSpec={sockets:6,lights:2,lux:100,areaPercent:0.18,reason:'по две розетки с каждой стороны кровати.'};
+  var bathSpec={sockets:2,lights:2,lux:50,areaPercent:0.08,reason:'влагозащищённые розетки, УЗО 10 мА.'};
+  var roomSpecs = {
+    kitchen:{sockets:12,lights:4,lux:150,areaPercent:0.15,reason:'содержит холодильник, СВЧ, посудомойку, чайник, кофемашину.'},
+    living:{sockets:8,lights:3,lux:150,areaPercent:0.30,reason:'требуются розетки у ТВ-зоны и дивана.'},
+    bedroom:bedSpec,
+    bathroom:bathSpec,
+    corridor:{sockets:1,lights:1,lux:50,areaPercent:0.10,reason:'розетка для пылесоса.'},
+    children:{sockets:7,lights:3,lux:200,areaPercent:0.16,reason:'розетки с защитными шторками.'},
+    cabinet:{sockets:8,lights:2,lux:300,areaPercent:0.14,reason:'для ПК, принтера, ИБП.'},
+    balcony:{sockets:1,lights:1,lux:50,areaPercent:0.06,reason:'достаточно одной розетки.'},
+    garage:{sockets:3,lights:2,lux:75,areaPercent:0.20,reason:'влагозащищённые IP44.'},
+    boiler:{sockets:4,lights:1,lux:50,areaPercent:0.06,reason:'розетки для котла и автоматики.'},
+    main:{sockets:14,lights:5,lux:150,areaPercent:0.70,reason:'объединённая зона гостиной и спальни.'},
+    open:{sockets:20,lights:6,lux:400,areaPercent:0.40,reason:'рабочие места сотрудников.'},
+    meeting:{sockets:4,lights:2,lux:300,areaPercent:0.15,reason:'переговорный стол и презентационное оборудование.'},
+    boss:{sockets:6,lights:2,lux:300,areaPercent:0.10,reason:'кабинет руководителя.'},
+    server:{sockets:4,lights:1,lux:200,areaPercent:0.08,reason:'оборудование ИБП и серверные стойки.'},
+    hall:{sockets:8,lights:6,lux:500,areaPercent:0.50,reason:'освещение витрин и торгового оборудования.'},
+    cash:{sockets:4,lights:2,lux:400,areaPercent:0.10,reason:'кассовые аппараты и терминалы.'},
+    mainHall:{sockets:6,lights:4,lux:200,areaPercent:0.40,reason:'обеденная зона, декоративная подсветка.'},
+    bar:{sockets:4,lights:2,lux:200,areaPercent:0.10,reason:'барная стойка, холодильники.'},
+    storage:{sockets:2,lights:4,lux:150,areaPercent:0.70,reason:'освещение стеллажей и проходов.'},
+    loading:{sockets:2,lights:2,lux:200,areaPercent:0.15,reason:'подключение погрузочной техники.'},
+    washing:{sockets:2,lights:1,lux:300,areaPercent:0.15,reason:'мойка и сушка волос.'},
+    reception:{sockets:4,lights:2,lux:300,areaPercent:0.15,reason:'регистратура, оргтехника.'},
+    procedure:{sockets:3,lights:2,lux:500,areaPercent:0.20,reason:'медицинское оборудование.'},
+    bedroom1:bedSpec,bedroom2:bedSpec,bathroom1:bathSpec,bathroom2:bathSpec
+  };
+  var roomDisplayNames = {
+    kitchen:"Кухня",living:"Гостиная",bedroom:"Спальня",bathroom:"Ванная",corridor:"Прихожая",children:"Детская",cabinet:"Кабинет",balcony:"Балкон",
+    garage:"Гараж",boiler:"Котельная",main:"Основное помещение",open:"Open Space",meeting:"Переговорная",boss:"Кабинет руководителя",server:"Серверная",
+    hall:"Торговый зал",cash:"Кассовая зона",mainHall:"Основной зал",bar:"Бар",storage:"Зона хранения",loading:"Зона погрузки",washing:"Моечная",
+    reception:"Ресепшен",procedure:"Процедурная",warehouse:"Склад",office:"Офис",
+    bedroom1:"Спальня (1 этаж)",bedroom2:"Спальня (2 этаж)",bathroom1:"Ванная (1 этаж)",bathroom2:"Ванная (2 этаж)"
+  };
+  var applianceLines = {
+    conditioner:{autoAmps:16,cable25m:15,power:2.5,name:"Кондиционер"},
+    dishwasher:{autoAmps:16,cable25m:12,power:2.2,name:"Посудомойка"},
+    boiler:{autoAmps:16,cable25m:15,power:2.0,name:"Бойлер"},
+    floorHeat:{autoAmps:16,cable25m:20,power:3.0,name:"Тёплый пол"},
+    washingMachine:{autoAmps:16,cable25m:12,power:2.2,name:"Стиральная машина"},
+    dryer:{autoAmps:16,cable25m:12,power:2.5,name:"Сушильная машина"},
+    evCharger:{autoAmps:32,cable6m:25,power:7.0,name:"Зарядка электромобиля"},
+    server:{autoAmps:16,cable25m:20,power:3.0,name:"Серверная / ИБП"}
+  };
+  var PLAN_LAYOUT = {
+    living:{x:10,y:10,w:180,h:130,tx:100,ty:80},
+    kitchen:{x:200,y:10,w:190,h:130,tx:295,ty:80},
+    bedroom:{x:10,y:150,w:180,h:130,tx:100,ty:220},
+    bathroom:{x:200,y:150,w:90,h:60,tx:245,ty:185},
+    corridor:{x:300,y:150,w:90,h:60,tx:345,ty:185}
+  };
+
+  // ===== Этажность =====
+  function showFloorsField(){
+    floorsWrap.style.display=objTypeSelect.value==="house"?"":"none";
+  }
+  function currentRooms(type){
+    if(type==="house"&&floorsSelect.value==="2")return house2First.concat(house2Second);
+    return roomSets[type]||roomSets.flat;
+  }
+  function currentRoomGroups(type){
+    if(type==="house"&&floorsSelect.value==="2"){
+      return [{h:"1 этаж",rooms:house2First},{h:"2 этаж",rooms:house2Second}];
+    }
+    return [{h:null,rooms:roomSets[type]||roomSets.flat}];
+  }
+
+  // ===== Рендер помещений =====
+  function renderRooms(type){
+    roomCounts={};
+    var html="";
+    currentRoomGroups(type).forEach(function(g,gi){
+      if(g.h)html+='<div class="floor-h">'+g.h+"</div>";
+      html+='<div class="rt">'+g.rooms.map(function(r){
+        if(MULTI[r.id])roomCounts[r.id]=1;
+        var plan=PLAN_OF[r.id]||r.id;
+        if(MULTI[r.id]){
+          return '<label class="rtl"><input type="checkbox" class="room-cb" value="'+r.id+'" data-plan="'+plan+'" data-floor="'+gi+'" checked><span><span class="ico">'+(ROOM_ICONS[r.id]||"🏠")+'</span> '+r.name+'<span class="stepper"><button type="button" class="qbtn" data-d="-1">−</button><b>1</b><button type="button" class="qbtn" data-d="1">+</button></span></span></label>';
+        }
+        return '<label class="rtl"><input type="checkbox" class="room-cb" value="'+r.id+'" data-plan="'+plan+'" data-floor="'+gi+'" checked><span><span class="ico">'+(ROOM_ICONS[r.id]||"🏠")+'</span> '+r.name+'<span class="chk"></span></span></label>';
+      }).join("")+"</div>";
+    });
+    roomsContainer.innerHTML=html;
+    bindStepper();
+  }
+
+  function bindStepper(){
+    roomsContainer.querySelectorAll(".stepper .qbtn").forEach(function(btn){
+      btn.addEventListener("click",function(e){
+        e.preventDefault();e.stopPropagation();
+        var d=parseInt(this.getAttribute("data-d"));
+        var rtl=this.closest(".rtl");
+        var cb=rtl.querySelector(".room-cb");
+        var num=this.parentElement.querySelector("b");
+        var v=Math.max(0,Math.min(6,(parseInt(num.textContent)||0)+d));
+        cb.checked=v>0;
+        num.textContent=v;
+        roomCounts[cb.value]=v;
+        cb.dispatchEvent(new Event("change",{bubbles:true}));
+        updateSVGSelection();
+      });
+    });
+  }
+
+  function bindAppStepper(){
+    document.querySelectorAll(".astep .qbtn").forEach(function(btn){
+      btn.addEventListener("click",function(e){
+        e.preventDefault();e.stopPropagation();
+        var d=parseInt(this.getAttribute("data-d"));
+        var sr=this.closest(".sr");
+        var cb=sr.querySelector(".appliance-cb");
+        var num=this.parentElement.querySelector("b");
+        var v=Math.max(0,Math.min(10,(parseInt(num.textContent)||0)+d));
+        cb.checked=v>0;
+        num.textContent=v;
+        applianceCounts[cb.value]=v;
+        cb.dispatchEvent(new Event("change",{bubbles:true}));
+      });
+    });
+  }
+
+  function cbsFor(pid){
+    return Array.prototype.slice.call(roomsContainer.querySelectorAll('.room-cb[data-plan="'+pid+'"]'));
+  }
+
+  // ===== SVG-план =====
+  function collectTotals(filterFloor){
+    var totals={};
+    document.querySelectorAll('.room-cb:checked').forEach(function(cb){
+      if(filterFloor!==null&&cb.getAttribute("data-floor")!==filterFloor)return;
+      var pid=cb.getAttribute("data-plan");
+      if(!PLAN_LAYOUT[pid])return;
+      var cnt=(MULTI[cb.value]? roomCounts[cb.value] : 1)||1;
+      totals[pid]=(totals[pid]||0)+cnt;
+    });
+    return totals;
+  }
+  function buildFloorSvg(totals,floor){
+    var df=(floor!==null&&floor!==undefined)?' data-floor="'+floor+'"':"";
+    var parts=['<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">'];
+    Object.keys(totals).forEach(function(pid){
+      var base=PLAN_LAYOUT[pid];
+      var cnt=totals[pid];
+      var cols=Math.ceil(Math.sqrt(cnt));
+      var rows=Math.ceil(cnt/cols);
+      var cellW=Math.floor(base.w/cols);
+      var cellH=Math.floor(base.h/rows);
+      for(var i=0;i<cnt;i++){
+        var col=i%cols,row=Math.floor(i/cols);
+        var rx=base.x+col*cellW,ry=base.y+row*cellH;
+        var label=roomDisplayNames[pid]+(cnt>1?" "+(i+1):"");
+        var fs=Math.min(12,Math.floor(cellW/5));
+        parts.push('<rect x="'+rx+'" y="'+ry+'" width="'+cellW+'" height="'+cellH+'" class="room-polygon" data-room="'+pid+'"'+df+'/>');
+        parts.push('<text x="'+(rx+cellW/2)+'" y="'+(ry+cellH/2+4)+'" text-anchor="middle" class="room-text" font-size="'+fs+'">'+label+'</text>');
+      }
+    });
+    parts.push('</svg>');
+    return parts.join("");
+  }
+  function renderSVG(){
+    var svg=document.getElementById("svgContainer");
+    var note=document.getElementById("planSectionNote");
+    var isHouse2=objTypeSelect.value==="house"&&floorsSelect.value==="2";
+    var html="";
+    if(isHouse2){
+      ["0","1"].forEach(function(f){
+        var totals=collectTotals(f);
+        if(Object.keys(totals).length===0)return;
+        html+='<div class="floor-h">'+(f==="0"?"1 этаж":"2 этаж")+'</div>'+buildFloorSvg(totals,f);
+      });
+    }else{
+      var totals=collectTotals(null);
+      if(Object.keys(totals).length)html=buildFloorSvg(totals,null);
+    }
+    if(!html){
+      svg.innerHTML="<p style='text-align:center;color:var(--mut);padding:40px 0;font-size:13px;'>Схема доступна для квартиры и дома — выберите помещения в шаге 2.</p>";
+      if(note)note.style.display="none";
+      return;
+    }
+    if(note)note.style.display="";
+    svg.innerHTML=html;
+    document.querySelectorAll("#svgContainer .room-polygon").forEach(function(poly){
+      poly.addEventListener("click",function(){
+        var pid=this.dataset.room;
+        var floor=this.getAttribute("data-floor");
+        var cbl=cbsFor(pid);
+        if(floor!==null&&floor!==undefined)cbl=cbl.filter(function(cb){return cb.getAttribute("data-floor")===floor;});
+        var any=cbl.some(function(cb){return cb.checked;});
+        cbl.forEach(function(cb){
+          if(any&&cb.checked){cb.checked=false;}
+          if(!any&&!cb.checked){cb.checked=true;}
+        });
+        cbl.forEach(function(cb){cb.dispatchEvent(new Event("change",{bubbles:true}));});
+        renderSVG();
+      });
+    });
+    updateSVGSelection();
+  }
+
+  function updateSVGSelection(){
+    document.querySelectorAll("#svgContainer .room-polygon").forEach(function(poly){
+      var floor=poly.getAttribute("data-floor");
+      var cbl=cbsFor(poly.dataset.room);
+      if(floor!==null&&floor!==undefined)cbl=cbl.filter(function(cb){return cb.getAttribute("data-floor")===floor;});
+      var any=cbl.some(function(cb){return cb.checked;});
+      poly.classList.toggle("selected",any);
+    });
+  }
+
+  objTypeSelect.addEventListener("change",function(){
+    showFloorsField();
+    renderRooms(objTypeSelect.value);
+    renderSVG();
+  });
+  floorsSelect.addEventListener("change",function(){
+    renderRooms(objTypeSelect.value);
+    renderSVG();
+  });
+  roomsContainer.addEventListener("change",function(e){
+    var t=e.target;
+    if(t&&t.classList&&t.classList.contains("room-cb")&&MULTI[t.value]){
+      var num=t.closest(".rtl")?t.closest(".rtl").querySelector(".stepper b"):null;
+      if(num){
+        var v=parseInt(num.textContent)||0;
+        if(t.checked&&v===0){v=1;num.textContent=v;roomCounts[t.value]=v;}
+        if(!t.checked){num.textContent=0;roomCounts[t.value]=0;}
+      }
+    }
+    renderSVG();
+  });
+
+  // ===== Расчёт =====
+  var lastCalc=null;
+  function computeProject(){
+    var objType=objTypeSelect.value;
+    var floors=floorsSelect.value;
+    var isHouse2=objType==="house"&&floors==="2";
+    var phase=parseInt(document.getElementById("phaseType").value);
+    var stove=document.getElementById("stoveType").value;
+    var area=parseFloat(areaInput.value)||60;
+    var selectedRooms=Array.prototype.map.call(document.querySelectorAll(".room-cb:checked"),function(cb){return cb.value;});
+    var appliances=Array.prototype.map.call(document.querySelectorAll(".appliance-cb:checked"),function(cb){return cb.value;});
+    if(selectedRooms.length===0){ts("Выберите хотя бы одно помещение");return null;}
+
+    var totalSockets=0,totalLights=0,totalBreakers=0,bathroomsTotal=0;
+    var cable15=0,cable25=0,cable6=0,totalPower=0;
+    var roomsResult=[],shieldList=[],reasons=[];
+    var stovePower=0;
+
+    selectedRooms.forEach(function(room){
+      var mult=roomCounts[room]||1;
+      var spec=roomSpecs[room]||roomSpecs.living;
+      var roomArea=area*(spec.areaPercent||0.1);
+      var sockets=spec.sockets*mult;
+      var lights=Math.round(spec.lights*(roomArea/15))*mult;
+      var roomCable25=Math.round(sockets*6);
+      var roomCable15=Math.round(lights*8);
+      var roomPower=sockets*0.2+lights*0.05;
+      totalSockets+=sockets;totalLights+=lights;
+      cable25+=roomCable25;cable15+=roomCable15;
+      totalPower+=roomPower;totalBreakers+=mult;
+      var roomName=roomDisplayNames[room]||room;
+      shieldList.push({name:mult>1?roomName+" ×"+mult:roomName,auto:16,heavy:false});
+      reasons.push(roomName+": "+sockets+" розеток, потому что "+spec.reason);
+      if(room==="bathroom"||room==="bathroom1"||room==="bathroom2")bathroomsTotal+=mult;
+      if(room==="kitchen"&&stove!=="gas"){
+        stovePower=stove==="induction"?7.4:7.0;
+        cable6+=Math.round(18*(roomArea/12));
+        totalPower+=stovePower;totalBreakers+=1;
+        shieldList.push({name:"Плита",auto:32,heavy:true});
+        reasons.push("Плита ("+(stove==="induction"?"индукционная":"электрическая")+"): отдельная линия 32 А, кабель 6 мм².");
+      }
+      roomsResult.push({room:room,name:mult>1?roomName+" ×"+mult:roomName,sockets:sockets,lights:lights,cable25:roomCable25,cable15:roomCable15,auto:16,uzo:(room==="bathroom"||room==="bathroom1"||room==="bathroom2")?"10 мА":"30 мА",heavy:room==="kitchen"&&stove!=="gas"});
+    });
+
+    appliances.forEach(function(app){
+      var line=applianceLines[app];
+      if(line){
+        var cnt=(app==="conditioner"?(applianceCounts[app]||1):1);
+        if(cnt<1)return;
+        totalBreakers+=cnt;totalPower+=line.power*cnt;
+        if(line.cable25m)cable25+=line.cable25m*cnt;
+        if(line.cable6m)cable6+=line.cable6m*cnt;
+        var nm=line.name+(cnt>1?" ×"+cnt:"");
+        shieldList.push({name:nm,auto:line.autoAmps,heavy:false});
+        reasons.push(nm+": "+cnt+" отдельных линий, автомат "+line.autoAmps+" А на каждую.");
+      }
+    });
+
+    if(isHouse2){
+      cable15+=100;cable25+=100;
+      reasons.push("Межэтажный переход (2 этажа): дополнительно по 100 м кабеля ВВГ-нг-LS 3×1.5 и 3×2.5.");
+    }
+
+    var totalLuminousFlux=roomsResult.reduce(function(sum,r){return sum+(roomSpecs[r.room]?.lux||150)*(area*(roomSpecs[r.room]?.areaPercent||0.1));},0);
+    var uzoCount=Math.ceil(totalBreakers/3)+bathroomsTotal;
+    var subroz=totalSockets+totalLights;
+    var switches=Math.round(totalLights*0.7);
+    var corrugated=Math.round((cable15+cable25+cable6)*0.8);
+    var shieldModules=totalBreakers+uzoCount+2;
+    var shieldSize=Math.ceil(shieldModules/6)*6+6;
+
+    var price15=94,price25=187,price6=357;
+    var materialCost=Math.round(cable15*price15+cable25*price25+cable6*price6+subroz*136+switches*425+totalSockets*374+totalLights*595+totalBreakers*1530+uzoCount*4760+corrugated*26);
+    var installCost=Math.round(area*2125);
+    var totalCost=materialCost+installCost;
+    var incoming=area>80||phase===3?"50":"40";
+
+    document.getElementById("reportContainer").innerHTML=
+      "<h4>📝 Описание проекта</h4>"+
+      "<p>Для объекта площадью <strong>"+area+" м²</strong> ("+objTypeSelect.options[objTypeSelect.selectedIndex].text.toLowerCase()+", "+(isHouse2?"2 этажа":"1 этаж")+") с "+(phase===3?"трёхфазным":"однофазным")+" вводом и "+(stove==="gas"?"газовой":stove==="electric"?"электрической":"индукционной")+" плитой требуется:</p>"+
+      "<ul>"+
+      "<li>Розеток: <strong>"+totalSockets+" шт.</strong></li>"+
+      "<li>Светильников: <strong>"+totalLights+" шт.</strong></li>"+
+      "<li>Кабель ВВГ-нг-LS 3×1.5: <strong>≈ "+fmt(cable15)+" м</strong></li>"+
+      "<li>Кабель ВВГ-нг-LS 3×2.5: <strong>≈ "+fmt(cable25)+" м</strong></li>"+
+      "<li>Кабель ВВГ-нг-LS 3×6: <strong>≈ "+fmt(cable6)+" м</strong></li>"+
+      "<li>Автоматов: <strong>"+totalBreakers+" шт.</strong></li>"+
+      "<li>УЗО: <strong>"+uzoCount+" шт.</strong></li>"+
+      "<li>Щит на <strong>"+shieldSize+" модулей</strong></li>"+
+      "<li>Расчётная мощность: <strong>≈ "+totalPower.toFixed(1)+" кВт</strong> (с резервом 20%: <strong>"+(totalPower*1.2).toFixed(1)+" кВт</strong>)</li>"+
+      "<li>Ориентировочная стоимость «под ключ»: <strong>≈ "+fmt(totalCost)+" ₽</strong></li>"+
+      "</ul>";
+
+    document.getElementById("roomsResultContainer").innerHTML=roomsResult.map(function(r){
+      var heavyLine="";
+      if(r.heavy){heavyLine="<div class=\"detail-item\"><span>Кабель ВВГ-нг-LS 3×6 (плита)</span><strong>≈ "+fmt(Math.round(18*(area*(roomSpecs[r.room]?.areaPercent||0.1)/12)))+" м</strong></div>";}
+      return "<div class=\"result-card\"><h4>"+(ROOM_ICONS[r.room]||"🏠")+" "+r.name+"</h4>"+
+        "<div class=\"detail-item\"><span>Розетки</span><strong>"+r.sockets+" шт.</strong></div>"+
+        "<div class=\"detail-item\"><span>Светильники</span><strong>"+r.lights+" шт.</strong></div>"+
+        "<div class=\"detail-item\"><span>Кабель ВВГ-нг-LS 3×2.5 (розетки)</span><strong>≈ "+fmt(r.cable25)+" м</strong></div>"+
+        "<div class=\"detail-item\"><span>Кабель ВВГ-нг-LS 3×1.5 (свет)</span><strong>≈ "+fmt(r.cable15)+" м</strong></div>"+
+        "<div class=\"detail-item\"><span>Автомат</span><strong>"+r.auto+" А</strong></div>"+
+        "<div class=\"detail-item\"><span>УЗО</span><strong>"+r.uzo+"</strong></div>"+heavyLine+"</div>";
+    }).join("");
+
+    var shieldHtml="<h4>🔌 Рекомендуемый щит ("+shieldSize+" модулей)</h4>";
+    var shieldString="Вводной автомат "+incoming+" А; Реле напряжения 63 А; УЗО 30 мА — "+uzoCount+" шт.";
+    shieldHtml+="<ul><li>Вводной автомат "+incoming+" А</li><li>Реле напряжения 63 А</li><li>УЗО 30 мА — "+uzoCount+" шт.</li>"+
+      shieldList.map(function(s){return "<li>"+(s.heavy?"<strong>Автомат "+s.auto+"А — "+s.name+"</strong>":"Автомат "+s.auto+"А — "+s.name)+"</li>";}).join("")+"</ul>";
+    document.getElementById("shieldContainer").innerHTML=shieldHtml;
+
+    document.getElementById("reasonContainer").innerHTML=
+      "<h4>📝 Почему выбраны такие параметры?</h4>"+
+      reasons.map(function(r){return "<div class=\"detail-item\"><span>"+r+"</span></div>";}).join("");
+
+    document.getElementById("summaryContainer").innerHTML=
+      "<h4>📊 Спецификация материалов</h4>"+
+      "<div class=\"detail-item\"><span>Кабель ВВГ-нг-LS 3×1.5 (освещение)</span><strong>≈ "+fmt(cable15)+" м</strong></div>"+
+      "<div class=\"detail-item\"><span>Кабель ВВГ-нг-LS 3×2.5 (розетки)</span><strong>≈ "+fmt(cable25)+" м</strong></div>"+
+      "<div class=\"detail-item\"><span>Кабель ВВГ-нг-LS 3×6 (мощные линии)</span><strong>≈ "+fmt(cable6)+" м</strong></div>"+
+      "<div class=\"detail-item\"><span>Гофра ПВХ 20 мм</span><strong>≈ "+fmt(corrugated)+" м</strong></div>"+
+      "<div class=\"detail-item\"><span>Подрозетники</span><strong>"+subroz+" шт.</strong></div>"+
+      "<div class=\"detail-item\"><span>Розетки</span><strong>"+totalSockets+" шт.</strong></div>"+
+      "<div class=\"detail-item\"><span>Выключатели</span><strong>"+switches+" шт.</strong></div>"+
+      "<div class=\"detail-item\"><span>Автоматы</span><strong>"+totalBreakers+" шт.</strong></div>"+
+      "<div class=\"detail-item\"><span>УЗО</span><strong>"+uzoCount+" шт.</strong></div>"+
+      "<div class=\"detail-item\"><span>Щит</span><strong>"+shieldSize+" модулей</strong></div>"+
+      "<div class=\"detail-item\"><span>Расчётная мощность</span><strong>≈ "+totalPower.toFixed(1)+" кВт (с резервом 20%: "+(totalPower*1.2).toFixed(1)+" кВт)</strong></div>"+
+      "<div class=\"detail-item\"><span>Рекомендуемый световой поток</span><strong>≈ "+Math.round(totalLuminousFlux)+" лм</strong></div>"+
+      "<div class=\"detail-item\"><span>Материалы</span><strong>≈ "+fmt(materialCost)+" ₽</strong></div>"+
+      "<div class=\"detail-item\"><span>Монтаж</span><strong>≈ "+fmt(installCost)+" ₽</strong></div>"+
+      "<div class=\"detail-item total\"><span>Итого «под ключ»</span><strong>≈ "+fmt(totalCost)+" ₽</strong></div>";
+
+    var items=[
+      {n:"Кабель ВВГ-нг-LS 3×1.5",u:"м",p:94,q:cable15},
+      {n:"Кабель ВВГ-нг-LS 3×2.5",u:"м",p:187,q:cable25},
+      {n:"Кабель ВВГ-нг-LS 3×6",u:"м",p:357,q:cable6},
+      {n:"Розетки",u:"шт",p:374,q:totalSockets},
+      {n:"Выключатели",u:"шт",p:425,q:switches},
+      {n:"Подрозетники",u:"шт",p:136,q:subroz},
+      {n:"Светильники",u:"шт",p:595,q:totalLights},
+      {n:"Гофра ПВХ 20 мм",u:"м",p:26,q:corrugated},
+      {n:"Автоматы",u:"шт",p:1530,q:totalBreakers},
+      {n:"УЗО",u:"шт",p:4760,q:uzoCount}
+    ];
+    items.forEach(function(it){it.s=Math.round(it.p*it.q);});
+
+    var result=document.getElementById("projectResult");
+    result.style.display="block";
+
+    lastCalc={
+      objType:objType,floors:floors,isHouse2:isHouse2,phase:phase,stove:stove,area:area,
+      typeName:objTypeSelect.options[objTypeSelect.selectedIndex].text,
+      totals:{sockets:totalSockets,lights:totalLights,breakers:totalBreakers,uzo:uzoCount,cable15:cable15,cable25:cable25,cable6:cable6,totalPower:totalPower,subroz:subroz,switches:switches,corrugated:corrugated,shieldSize:shieldSize,material:materialCost,install:installCost,total:totalCost},
+      rooms:roomsResult,shield:shieldList,reasons:reasons,items:items,shieldString:shieldString
+    };
+    return lastCalc;
+  }
+
+  document.getElementById("createProjectBtn").addEventListener("click",function(){
+    var c=computeProject();
+    if(c){saveCalc();window.scrollTo(0,0);ts("Проект сохранён в историю");}
+  });
+
+  // ===== Сброс =====
+  function rst(){
+    document.getElementById("phaseType").value="1";
+    document.getElementById("stoveType").value="gas";
+    areaInput.value=60;
+    applianceCounts={};
+    document.querySelectorAll(".appliance-cb").forEach(function(cb){
+      cb.checked=false;
+      var bb=cb.closest(".sr")?cb.closest(".sr").querySelector(".astep b"):null;
+      if(bb)bb.textContent=1;
+    });
+    objTypeSelect.value="flat";
+    floorsSelect.value="1";
+    showFloorsField();
+    renderRooms("flat");
+    renderSVG();
+    document.getElementById("projectResult").style.display="none";
+    ts("Расчёт сброшен");
+  }
+
+  // ===== PDF =====
+  async function ePDF(){
+    var c=lastCalc||computeProject();
+    if(!c)return;
+    if(typeof window.jspdf==="undefined"){ts("Загрузка PDF...");return;}
+    var doc=new window.jspdf.jsPDF("p","mm","a4");
+    try{
+      var fN=await fetch("https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Me5Q.ttf");
+      if(fN.ok){var bN=await fN.arrayBuffer();var sN="";var aN=new Uint8Array(bN);for(var i=0;i<aN.length;i++)sN+=String.fromCharCode(aN[i]);doc.addFileToVFS("RobotoN.ttf",btoa(sN));doc.addFont("RobotoN.ttf","Roboto","normal");}
+      var fB=await fetch("https://fonts.gstatic.com/s/roboto/v30/KFOlCnqEu92Fr1MmEU9fBBc4.ttf");
+      if(fB.ok){var bB=await fB.arrayBuffer();var sB="";var aB=new Uint8Array(bB);for(var i=0;i<aB.length;i++)sB+=String.fromCharCode(aB[i]);doc.addFileToVFS("RobotoB.ttf",btoa(sB));doc.addFont("RobotoB.ttf","Roboto","bold");}
+    }catch(e){}
+    var cn=document.getElementById("cN").value||"—",cp=document.getElementById("cP").value||"—",ca=document.getElementById("cA").value||"—";
+    doc.setFontSize(20);doc.setFont("Roboto","bold");doc.text("BELYAEV_PROJECT",105,16,{align:"center"});
+    doc.setFontSize(10);doc.setFont("Roboto","normal");doc.text("Проектировщик электрики — проект и смета",105,23,{align:"center"});
+    doc.setFontSize(9);
+    var d=new Date().toLocaleDateString("ru-RU")+" "+new Date().toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
+    var y=30;
+    doc.text("Дата: "+d,14,y);y+=5;
+    doc.text("Имя: "+cn,14,y);y+=5;
+    doc.text("Телефон: "+cp,14,y);y+=5;
+    doc.text("Адрес: "+ca,14,y);y+=5;
+    doc.text("Объект: "+c.typeName.toLowerCase()+", площадь "+c.area+" м², "+(c.isHouse2?"2 этажа":"1 этаж")+", "+(c.phase===3?"трёхфазный":"однофазный")+" ввод, плита "+(c.stove==="gas"?"газовая":c.stove==="electric"?"электрическая":"индукционная"),14,y);y+=7;
+    var rows=c.items.filter(function(it){return it.q>0;}).map(function(it){return [it.n,it.u,it.p,it.q,it.s];});
+    doc.autoTable({startY:y,head:[["Наименование","Ед.","Цена, ₽","Кол-во","Сумма, ₽"]],body:rows,styles:{fontSize:8,font:"Roboto"},headStyles:{fillColor:[22,25,32],fontStyle:"bold",font:"Roboto"},columnStyles:{0:{cellWidth:75},2:{halign:"right"},3:{halign:"center"},4:{halign:"right"}}});
+    y=doc.lastAutoTable.finalY+6;
+    doc.setFontSize(10);doc.setFont("Roboto","bold");
+    doc.text("Монтаж: "+fmt(c.totals.install)+" ₽  ("+Math.round(c.area)+" м² × 2125 ₽)",14,y);y+=6;
+    doc.text("ИТОГО: "+fmt(c.totals.total)+" ₽",14,y);y+=10;
+    doc.setFontSize(9);doc.setFont("Roboto","normal");
+    doc.text("Состав щита: "+c.shieldString,14,y);y+=5;
+    c.shield.forEach(function(s){doc.text("  • Автомат "+s.auto+"А — "+s.name,14,y);y+=4.5;});
+    y+=4;
+    doc.text("Пояснения:",14,y);y+=4.5;
+    c.reasons.forEach(function(r){
+      var lines=doc.splitTextToSize("  • "+r,178);
+      doc.text(lines,14,y);y+=lines.length*4.2;
+    });
+    doc.save(fname()+".pdf");ts("PDF сохранён");
+  }
+
+  // ===== XLS =====
+  function esX(v){return String(v==null?"":v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,"");}
+  function xlsCell(val,num,style){
+    var dt=num?"Number":"String";
+    var esc=num?String(val).replace(",","."):esX(val);
+    return "<Cell"+(style?' ss:StyleID="'+style+'"':"")+'><Data ss:Type="'+dt+'">'+esc+"</Data></Cell>";
+  }
+  function xlsRow(cells){return "<Row>"+cells.join("")+"</Row>";}
+  function colW(arr){
+    var W=function(s){var w=0;(""+s).split("").forEach(function(ch){
+      if(/[\u0400-\u04FF]/.test(ch))w+=1.2;
+      else if(/\s/.test(ch))w+=0.7;
+      else w+=1.0;
+    });return w;};
+    var w=arr.reduce(function(m,s){return Math.max(m,W(s));},0);
+    return Math.min(Math.round(w+3),60);
+  }
+  function eXLS(){
+    var c=lastCalc||computeProject();
+    if(!c)return;
+    var cn=document.getElementById("cN").value||"—",cp=document.getElementById("cP").value||"—",ca=document.getElementById("cA").value||"—";
+    var d=new Date().toLocaleDateString("ru-RU");
+    var rows=c.items.filter(function(it){return it.q>0;});
+    if(!rows.length){ts("Нет позиций");return;}
+    var c0=[],c1=[],c2=[],c3=[],c4=[];
+    rows.forEach(function(r){c0.push(r.n);c1.push(r.u);c2.push(r.p);c3.push(r.q);c4.push(r.s);});
+    c0.push("Наименование");c1.push("Ед.");c2.push("Цена");c3.push("Кол-во");c4.push("Сумма");
+    c0.push("BELYAEV_PROJECT","Лицо: "+cn,"Тел: "+cp,"Адрес: "+ca);
+    var W=[colW(c0),colW(c1),colW(c2),colW(c3),colW(c4)];
+    var cols=W.map(function(w){return '<Column ss:Width="'+w+'" ss:AutoFitWidth="0"/>';}).join("");
+    var rowsXml="";
+    rowsXml+=xlsRow([xlsCell("BELYAEV_PROJECT",0,"Title")]);
+    rowsXml+=xlsRow([xlsCell("Проектировщик электрики — проект и смета",0,"Info")]);
+    rowsXml+=xlsRow([xlsCell("Дата: "+d,0,"Info")]);
+    rowsXml+=xlsRow([xlsCell("Имя: "+cn,0,"Info")]);
+    rowsXml+=xlsRow([xlsCell("Тел: "+cp,0,"Info")]);
+    rowsXml+=xlsRow([xlsCell("Адрес: "+ca,0,"Info")]);
+    rowsXml+=xlsRow([xlsCell("Объект: "+c.typeName.toLowerCase()+", площадь "+c.area+" м², "+(c.isHouse2?"2 этажа":"1 этаж")+", "+(c.phase===3?"трёхфазный":"однофазный")+" ввод",0,"Info")]);
+    rowsXml+=xlsRow([xlsCell("",0,"Info")]);
+    rowsXml+=xlsRow([xlsCell("Наименование",0,"Hdr"),xlsCell("Ед.",0,"HdrC"),xlsCell("Цена, ₽",0,"HdrC"),xlsCell("Кол-во",0,"HdrC"),xlsCell("Сумма, ₽",0,"HdrC")]);
+    rowsXml+=xlsRow([xlsCell("Материалы",0,"Cat"),xlsCell("",0,"Cat"),xlsCell("",0,"Cat"),xlsCell("",0,"Cat"),xlsCell("",0,"Cat")]);
+    rows.forEach(function(r){
+      rowsXml+=xlsRow([xlsCell(r.n,0,"Item"),xlsCell(r.u,0,"Num"),xlsCell(r.p,1,"Num"),xlsCell(r.q,1,"Num"),xlsCell(r.s,1,"Num")]);
+    });
+    rowsXml+=xlsRow([xlsCell("Монтаж ("+Math.round(c.area)+" м² × 2125 ₽)",0,"Item"),xlsCell("м²",0,"Num"),xlsCell(2125,1,"Num"),xlsCell(Math.round(c.area),1,"Num"),xlsCell(c.totals.install,1,"Num")]);
+    rowsXml+=xlsRow([xlsCell("ИТОГО",0,"Tot"),xlsCell("",0,"Tot"),xlsCell("",0,"Tot"),xlsCell("",0,"Tot"),xlsCell(c.totals.total,1,"Tot")]);
+    rowsXml+=xlsRow([xlsCell("",0,"Info")]);
+    rowsXml+=xlsRow([xlsCell("Состав щита",0,"Cat"),xlsCell("",0,"Cat"),xlsCell("",0,"Cat"),xlsCell("",0,"Cat"),xlsCell("",0,"Cat")]);
+    rowsXml+=xlsRow([xlsCell(c.shieldString,0,"Item"),xlsCell("",0,"Num"),xlsCell("",0,"Num"),xlsCell("",0,"Num"),xlsCell("",0,"Num")]);
+    c.shield.forEach(function(s){
+      rowsXml+=xlsRow([xlsCell("Автомат "+s.auto+"А — "+s.name,0,"Item"),xlsCell("",0,"Num"),xlsCell("",0,"Num"),xlsCell("",0,"Num"),xlsCell("",0,"Num")]);
+    });
+    rowsXml+=xlsRow([xlsCell("Пояснения",0,"Cat"),xlsCell("",0,"Cat"),xlsCell("",0,"Cat"),xlsCell("",0,"Cat"),xlsCell("",0,"Cat")]);
+    c.reasons.forEach(function(r){
+      rowsXml+=xlsRow([xlsCell(r,0,"Item"),xlsCell("",0,"Num"),xlsCell("",0,"Num"),xlsCell("",0,"Num"),xlsCell("",0,"Num")]);
+    });
+    var xml='<?xml version="1.0"?>\n<?mso-application progid="Excel.Sheet"?>\n<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet" xmlns:html="http://www.w3.org/TR/REC-html40"><Styles>'+
+      '<Style ss:ID="Def"><Alignment ss:Vertical="Center"/><Font ss:Size="10" ss:FontName="Arial"/></Style>'+
+      '<Style ss:ID="Title"><Font ss:Bold="1" ss:Size="18" ss:FontName="Arial"/><Alignment ss:Vertical="Center"/></Style>'+
+      '<Style ss:ID="Info"><Alignment ss:Vertical="Center"/><Font ss:Size="10" ss:FontName="Arial"/></Style>'+
+      '<Style ss:ID="Hdr"><Font ss:Bold="1" ss:Size="10" ss:FontName="Arial" ss:Color="#FFCF40"/><Interior ss:Color="#161920" ss:Pattern="Solid"/><Alignment ss:Horizontal="Left" ss:Vertical="Center"/><Borders><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1"/></Borders></Style>'+
+      '<Style ss:ID="HdrC"><Font ss:Bold="1" ss:Size="10" ss:FontName="Arial" ss:Color="#FFCF40"/><Interior ss:Color="#161920" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Borders><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1"/></Borders></Style>'+
+      '<Style ss:ID="Cat"><Font ss:Bold="1" ss:Size="10" ss:FontName="Arial"/><Alignment ss:Vertical="Center"/><Borders><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1"/></Borders></Style>'+
+      '<Style ss:ID="Item"><Alignment ss:Vertical="Center" ss:WrapText="1"/><Font ss:Size="10" ss:FontName="Arial"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1"/></Borders></Style>'+
+      '<Style ss:ID="Num"><Alignment ss:Horizontal="Right" ss:Vertical="Center"/><Font ss:Size="10" ss:FontName="Arial"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1"/></Borders></Style>'+
+      '<Style ss:ID="Tot"><Font ss:Bold="1" ss:Size="11" ss:FontName="Arial"/><Alignment ss:Vertical="Center"/><Borders><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="2"/></Borders></Style>'+
+      "</Styles><Worksheet ss:Name=\"Смета\"><Table ss:DefaultColumnWidth=\"12\">"+cols+rowsXml+"</Table></Worksheet></Workbook>";
+    var blob=new Blob([xml],{type:"application/vnd.ms-excel"});
+    var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fname()+".xls";
+    a.click();URL.revokeObjectURL(a.href);ts("XLS сохранён");
+  }
+
+  // ===== Имя файла =====
+  function fname(){
+    var n=document.getElementById("cN").value.trim();
+    var p=document.getElementById("cP").value.trim();
+    var a=document.getElementById("cA").value.trim();
+    var clean=function(s){return s.replace(/[\\\/:*?"<>|[\]]/g," ").replace(/\s+/g," ").trim().replace(/ /g,"_");};
+    return (clean(n)||"расчет")+"_"+(clean(p)||"тел")+"_"+(clean(a)||"объект");
+  }
+
+  // ===== История =====
+  var editingId=null;
+  function getHist(){try{return JSON.parse(localStorage.getItem("bp_hist")||"[]");}catch(e){return[];}}
+  function saveHist(h){try{localStorage.setItem("bp_hist",JSON.stringify(h));}catch(e){}}
+  function saveCalc(){
+    var c=lastCalc;if(!c)return null;
+    var cn=document.getElementById("cN").value.trim()||"Без имени";
+    var cp=document.getElementById("cP").value.trim();
+    var ca=document.getElementById("cA").value.trim();
+    var selected={},qty={},appl={};
+    document.querySelectorAll(".room-cb").forEach(function(cb){selected[cb.value]=cb.checked;qty[cb.value]=Math.max(0,roomCounts[cb.value]||1);});
+    document.querySelectorAll(".appliance-cb").forEach(function(cb){if(cb.checked)appl[cb.value]=Math.max(1,applianceCounts[cb.value]||1);});
+    var h=getHist();var rec;
+    if(editingId&&h.some(function(x){return x.id===editingId;})){
+      rec=h.find(function(x){return x.id===editingId;});
+      rec.date=new Date().toLocaleDateString("ru-RU");
+      rec.time=new Date().toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
+      rec.name=cn;rec.phone=cp;rec.address=ca;rec.total=c.totals.total;
+      rec.in={objType:c.objType,floors:c.floors,phase:c.phase,stove:c.stove,area:c.area,selected:selected,qty:qty,appl:appl};
+      rec.out={items:c.items,reasons:c.reasons,shield:c.shield,shieldString:c.shieldString,totals:c.totals,typeName:c.typeName,isHouse2:c.isHouse2};
+    }else{
+      rec={id:Date.now(),date:new Date().toLocaleDateString("ru-RU"),time:new Date().toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"}),name:cn,phone:cp,address:ca,total:c.totals.total,
+        in:{objType:c.objType,floors:c.floors,phase:c.phase,stove:c.stove,area:c.area,selected:selected,qty:qty,appl:appl},
+        out:{items:c.items,reasons:c.reasons,shield:c.shield,shieldString:c.shieldString,totals:c.totals,typeName:c.typeName,isHouse2:c.isHouse2}};
+      h.unshift(rec);
+    }
+    saveHist(h);return rec;
+  }
+  function editCalc(id){
+    var h=getHist();var r=h.find(function(x){return x.id===id;});if(!r)return;
+    var objType=r.in.objType||"flat";
+    document.getElementById("cN").value=r.name==="Без имени"?"":r.name;
+    document.getElementById("cP").value=r.phone||"";
+    document.getElementById("cA").value=r.address||"";
+    objTypeSelect.value=objType;
+    floorsSelect.value=r.in.floors||"1";
+    document.getElementById("phaseType").value=r.in.phase||"1";
+    document.getElementById("stoveType").value=r.in.stove||"gas";
+    areaInput.value=r.in.area||60;
+    showFloorsField();
+    renderRooms(objType);
+    document.querySelectorAll(".room-cb").forEach(function(cb){
+      var sel=!!(r.in.selected&&r.in.selected[cb.value]);
+      cb.checked=sel;
+      var q=r.in.qty?r.in.qty[cb.value]:1;
+      if(q===undefined)q=sel?1:0;
+      var b=cb.parentElement.querySelector(".stepper b");
+      if(b){b.textContent=q;roomCounts[cb.value]=q;}
+    });
+    document.querySelectorAll(".appliance-cb").forEach(function(cb){
+      cb.checked=!!(r.in.appl&&r.in.appl[cb.value]);
+      var cnt=r.in.appl?r.in.appl[cb.value]:undefined;
+      var q=cnt!==undefined?cnt:(cb.checked?1:0);
+      var bb=cb.closest(".sr")?cb.closest(".sr").querySelector(".astep b"):null;
+      if(bb)bb.textContent=q;
+      if(cb.value==="conditioner")applianceCounts[cb.value]=q;
+    });
+    editingId=id;
+    renderSVG();
+    computeProject();
+    sP("pCalc",document.querySelectorAll(".nbtn")[0]);
+    window.scrollTo(0,0);
+    ts("Смета загружена для редактирования");
+  }
+  function dCalc(id){
+    if(!confirm("Удалить расчёт?"))return;
+    saveHist(getHist().filter(function(x){return x.id!==id;}));
+    bH();ts("Удалён");
+  }
+  function bH(){
+    var h=getHist();var el=document.getElementById("hList");
+    if(!h.length){el.innerHTML='<div class="hempty">Нет сохранённых расчётов.<br>Создайте проект — он сохранится в историю.</div>';return;}
+    el.innerHTML=h.map(function(c){
+      var cnt=c.out.items.filter(function(it){return it.q>0;}).length;
+      return '<div class="hitem" onclick="vDetail('+c.id+')">'+
+        '<div class="hitem-top"><span class="hitem-name">'+esX(c.name||"Без имени")+'</span><span class="hitem-date">'+c.date+" "+c.time+"</span></div>"+
+        (c.address?'<div class="hitem-addr">'+esX(c.address)+"</div>":"")+
+        '<div class="hitem-total">'+fm(c.total)+"</div>"+
+        '<div class="hitem-items">'+cnt+" позиций · "+(c.out.isHouse2?"2 этажа":"1 этаж")+'</div>'+
+        '<div class="hitem-actions">'+
+          '<button class="hp" onclick="event.stopPropagation();editCalc('+c.id+')">✎ Редактировать</button>'+
+          '<button class="hd" onclick="event.stopPropagation();dCalc('+c.id+')">🗑 Удалить</button>'+
+        "</div></div>";
+    }).join("");
+  }
+  function vDetail(id){
+    var h=getHist();var c=h.find(function(x){return x.id===id;});if(!c)return;
+    document.getElementById("dTitle").textContent=c.name||"Расчёт";
+    var html='<button class="hback" onclick="backHist()">← Назад</button>'+
+      '<div class="pnl">'+
+      '<div style="font-size:13px;margin-bottom:4px"><b>Дата:</b> '+c.date+" "+c.time+"</div>"+
+      (c.phone?'<div style="font-size:13px;margin-bottom:4px"><b>Тел:</b> '+esX(c.phone)+"</div>":"")+
+      (c.address?'<div style="font-size:13px;margin-bottom:4px"><b>Адрес:</b> '+esX(c.address)+"</div>":"")+
+      '<div style="font-size:13px"><b>Объект:</b> '+esX((c.out.typeName||"").toLowerCase())+", "+(c.out.isHouse2?"2 этажа":"1 этаж")+"</div>"+
+      "</div>"+
+      '<div class="pnl hdetail">';
+    c.out.items.filter(function(it){return it.q>0;}).forEach(function(it){
+      html+='<div class="hrow"><span class="hn">'+it.n+'</span><span class="hq">'+it.q+" × "+it.p+'</span><span class="ht">'+fm(it.s)+"</span></div>";
+    });
+    html+='<div class="hrow"><span class="hn">Монтаж</span><span class="hq">'+Math.round(c.out.totals.area||0)+'</span><span class="ht">'+fm(c.out.totals.install)+"</span></div>";
+    html+="</div>";
+    html+='<div class="pnl"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px;font-weight:800">ИТОГО</span><span class="totbig">'+fm(c.total)+"</span></div></div>";
+    html+='<div class="acts"><button class="btn bp" onclick="editCalc('+c.id+')">✎ Редактировать</button><button class="btn bd" onclick="dCalc('+c.id+')">🗑 Удалить</button></div>';
+    document.getElementById("dContent").innerHTML=html;
+    sP("pDetail",null);
+  }
+  function backHist(){sP("pHist",document.querySelectorAll(".nbtn")[1]);bH();}
+
+  // ===== Навигация =====
+  function sP(id,b){
+    document.querySelectorAll(".pg").forEach(function(p){p.classList.remove("a");});
+    document.getElementById(id).classList.add("a");
+    document.querySelectorAll(".nbtn").forEach(function(x){x.classList.remove("a");});
+    if(b)b.classList.add("a");
+    window.scrollTo(0,0);
+  }
+
+  // ===== Экспорт глобально =====
+  window.sP=sP;window.bH=bH;window.backHist=backHist;window.vDetail=vDetail;
+  window.editCalc=editCalc;window.dCalc=dCalc;window.rst=rst;window.ePDF=ePDF;window.eXLS=eXLS;
+
+  // ===== Инициализация =====
+  showFloorsField();
+  renderRooms("flat");
+  bindAppStepper();
+  renderSVG();
+  window.addEventListener("load",function(){setTimeout(function(){document.getElementById("splash").classList.add("hide");},300);});
+})();
+</script>
+<script>
+  if("serviceWorker" in navigator){
+    window.addEventListener("load",function(){
+      navigator.serviceWorker.register("sw.js").catch(function(){});
+    });
+  }
+</script>
+</body>
+</html>
