@@ -13,7 +13,7 @@
 <meta content="website" property="og:type">
 <meta content="BELYAEV_PROJECT — онлайн-проектировщик электрики" property="og:title">
 <meta content="Онлайн-проектировщик электрики: выберите объект, площадь, помещения, этажность и получите спецификацию кабеля, автоматов, УЗО, состав щита и смету под ключ." property="og:description">
-<meta property="og:url" content="https://gor-nn.ru/proektirovshchik-elektriki.html">
+
 <meta content="ru_RU" property="og:locale">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23161920'/%3E%3Cpath d='M52 12 L34 52 L46 52 L38 88 L66 42 L54 42 L62 12 Z' fill='%23f5b400'/%3E%3C/svg%3E">
 <link rel="manifest" href="manifest.webmanifest">
@@ -652,7 +652,7 @@ h1{font-weight:800;font-size:clamp(22px,5vw,28px);line-height:1.2;margin:0 0 6px
     var appliances=Array.prototype.map.call(document.querySelectorAll(".appliance-cb:checked"),function(cb){return cb.value;});
     if(selectedRooms.length===0){ts("Выберите хотя бы одно помещение");return null;}
 
-    var totalSockets=0,totalLights=0,totalBreakers=0,bathroomsTotal=0;
+    var totalSockets=0,totalLights=0,totalBreakers=0,lightingBreakers=0,bathroomsTotal=0;
     var cable15=0,cable25=0,cable6=0,totalPower=0;
     var roomsResult=[],shieldList=[],reasons=[];
     var stovePower=0;
@@ -671,7 +671,10 @@ h1{font-weight:800;font-size:clamp(22px,5vw,28px);line-height:1.2;margin:0 0 6px
       totalPower+=roomPower;totalBreakers+=mult;
       var roomName=roomDisplayNames[room]||room;
       shieldList.push({name:mult>1?roomName+" ×"+mult:roomName,auto:16,heavy:false});
+      shieldList.push({name:(mult>1?roomName+" ×"+mult:roomName)+" — освещение",auto:10,heavy:false});
       reasons.push(roomName+": "+sockets+" розеток, потому что "+spec.reason);
+      reasons.push("Освещение "+roomName+": отдельный автомат 10 А на каждое помещение.");
+      lightingBreakers+=mult;totalBreakers+=mult;
       if(room==="bathroom"||room==="bathroom1"||room==="bathroom2")bathroomsTotal+=mult;
       if(room==="kitchen"&&stove!=="gas"){
         stovePower=stove==="induction"?7.4:7.0;
@@ -726,6 +729,7 @@ h1{font-weight:800;font-size:clamp(22px,5vw,28px);line-height:1.2;margin:0 0 6px
       "<li>Кабель ВВГ-нг-LS 3×2.5: <strong>≈ "+fmt(cable25)+" м</strong></li>"+
       "<li>Кабель ВВГ-нг-LS 3×6: <strong>≈ "+fmt(cable6)+" м</strong></li>"+
       "<li>Автоматов: <strong>"+totalBreakers+" шт.</strong></li>"+
+      "<li>в т.ч. 10 А на освещение: <strong>"+lightingBreakers+" шт.</strong></li>"+
       "<li>УЗО: <strong>"+uzoCount+" шт.</strong></li>"+
       "<li>Щит на <strong>"+shieldSize+" модулей</strong></li>"+
       "<li>Расчётная мощность: <strong>≈ "+totalPower.toFixed(1)+" кВт</strong> (с резервом 20%: <strong>"+(totalPower*1.2).toFixed(1)+" кВт</strong>)</li>"+
@@ -740,7 +744,8 @@ h1{font-weight:800;font-size:clamp(22px,5vw,28px);line-height:1.2;margin:0 0 6px
         "<div class=\"detail-item\"><span>Светильники</span><strong>"+r.lights+" шт.</strong></div>"+
         "<div class=\"detail-item\"><span>Кабель ВВГ-нг-LS 3×2.5 (розетки)</span><strong>≈ "+fmt(r.cable25)+" м</strong></div>"+
         "<div class=\"detail-item\"><span>Кабель ВВГ-нг-LS 3×1.5 (свет)</span><strong>≈ "+fmt(r.cable15)+" м</strong></div>"+
-        "<div class=\"detail-item\"><span>Автомат</span><strong>"+r.auto+" А</strong></div>"+
+        "<div class=\"detail-item\"><span>Автомат (розетки)</span><strong>"+r.auto+" А</strong></div>"+
+        "<div class=\"detail-item\"><span>Автомат (освещение)</span><strong>10 А</strong></div>"+
         "<div class=\"detail-item\"><span>УЗО</span><strong>"+r.uzo+"</strong></div>"+heavyLine+"</div>";
     }).join("");
 
@@ -764,6 +769,7 @@ h1{font-weight:800;font-size:clamp(22px,5vw,28px);line-height:1.2;margin:0 0 6px
       "<div class=\"detail-item\"><span>Розетки</span><strong>"+totalSockets+" шт.</strong></div>"+
       "<div class=\"detail-item\"><span>Выключатели</span><strong>"+switches+" шт.</strong></div>"+
       "<div class=\"detail-item\"><span>Автоматы</span><strong>"+totalBreakers+" шт.</strong></div>"+
+      "<div class=\"detail-item\"><span>Автоматы 10 А (освещение)</span><strong>"+lightingBreakers+" шт.</strong></div>"+
       "<div class=\"detail-item\"><span>УЗО</span><strong>"+uzoCount+" шт.</strong></div>"+
       "<div class=\"detail-item\"><span>Щит</span><strong>"+shieldSize+" модулей</strong></div>"+
       "<div class=\"detail-item\"><span>Расчётная мощность</span><strong>≈ "+totalPower.toFixed(1)+" кВт (с резервом 20%: "+(totalPower*1.2).toFixed(1)+" кВт)</strong></div>"+
