@@ -1,8 +1,8 @@
-var CACHE="belyaev-project-v1";
+var CACHE="belyaev-project-v2";
 var ASSETS=[
   "./",
   "./index.html",
-  "./manifest.webmanifest",
+  "./manifest.json",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/maskable-512.png"

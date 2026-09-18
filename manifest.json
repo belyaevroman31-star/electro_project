@@ -1,0 +1,32 @@
+{
+  "name": "BELYAEV_PROJECT — Проектировщик электрики",
+  "short_name": "BELYAEV_PROJECT",
+  "description": "Онлайн-проектировщик электрики: объект, помещения, этажность, спецификация кабеля, автоматов, УЗО, состав щита и смета «под ключ».",
+  "lang": "ru",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d0f13",
+  "theme_color": "#0d0f13",
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

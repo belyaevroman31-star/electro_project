@@ -16,7 +16,7 @@
 
 <meta content="ru_RU" property="og:locale">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23161920'/%3E%3Cpath d='M52 12 L34 52 L46 52 L38 88 L66 42 L54 42 L62 12 Z' fill='%23f5b400'/%3E%3C/svg%3E">
-<link rel="manifest" href="manifest.webmanifest">
+<link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>BELYAEV_PROJECT — онлайн-проектировщик электрики</title>
@@ -216,6 +216,8 @@ h1{font-weight:800;font-size:clamp(22px,5vw,28px);line-height:1.2;margin:0 0 6px
       <h1>Проектировщик</h1>
       <p class="sub">Выберите объект, площадь, помещения и этажность — посчитаем кабель, автоматы, УЗО, соберём щит и рассчитаем смету «под ключ».</p>
     </header>
+
+    <button class="btn bp" id="installBtn" style="display:none;margin-bottom:14px">📲 Установить приложение</button>
 
     <svg class="wire" viewBox="0 0 1000 10" preserveAspectRatio="none"><line x1="0" y1="5" x2="1000" y2="5" stroke="#c17a4a" stroke-width="1" stroke-dasharray="2 6"/><circle cx="20" cy="5" r="2.5" fill="#f5b400"/><circle cx="500" cy="5" r="2.5" fill="#c17a4a"/><circle cx="980" cy="5" r="2.5" fill="#f5b400"/></svg>
 
@@ -1071,6 +1073,27 @@ h1{font-weight:800;font-size:clamp(22px,5vw,28px);line-height:1.2;margin:0 0 6px
   // ===== Экспорт глобально =====
   window.sP=sP;window.bH=bH;window.backHist=backHist;window.vDetail=vDetail;
   window.editCalc=editCalc;window.dCalc=dCalc;window.rst=rst;window.ePDF=ePDF;window.eXLS=eXLS;
+
+  // ===== Установка PWA =====
+  var dfdInstall=null;
+  window.addEventListener("beforeinstallprompt",function(e){
+    e.preventDefault();
+    dfdInstall=e;
+    var ib=document.getElementById("installBtn");
+    if(ib)ib.style.display="";
+  });
+  document.addEventListener("click",function(e){
+    var ib=document.getElementById("installBtn");
+    if(ib&&ib.contains(e.target)){
+      if(dfdInstall){dfdInstall.prompt();}
+    }
+  });
+  window.addEventListener("appinstalled",function(){
+    var ib=document.getElementById("installBtn");
+    if(ib)ib.style.display="none";
+    dfdInstall=null;
+    ts("Приложение установлено");
+  });
 
   // ===== Инициализация =====
   showFloorsField();
